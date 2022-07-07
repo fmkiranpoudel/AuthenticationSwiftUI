@@ -8,12 +8,11 @@
 import SwiftUI
 
 struct LoginView: View {
-    
-    @State var shoudlNavigateToSignup = false
-    @State var email: String = ""
-    @State var password: String = ""
+        
+    @State var alertMessage = ""
+    @State var showAlert = false
     @ObservedObject var loginViewModel = LoginViewModel()
-
+    
     
     init() {
         UIScrollView.appearance().bounces = false
@@ -24,7 +23,6 @@ struct LoginView: View {
             GeometryReader { proxy in
                 ScrollView(showsIndicators: false) {
                     VStack {
-                        NavigationLink(destination: SignupView(), isActive: $shoudlNavigateToSignup) { EmptyView() }
                         
                         Image.login
                             .resizable()
@@ -37,10 +35,10 @@ struct LoginView: View {
                                 .font(.system(size: 30, weight: .bold))
                             
                             VStack(spacing: 20) {
-                                CustomTextField(title: Constants.email, image: "at.circle.fill", email: email, type: .email)
+                                CustomTextField(model: loginViewModel.emailTextModel, image: "at.circle.fill")
                                     .frame(maxWidth: .infinity)
                                 
-                                CustomTextField(title: Constants.password, image: "lock.circle.fill", email: email, type: .password)
+                                CustomTextField(model: loginViewModel.passwordTextModel, image: "lock.circle.fill")
                                     .frame(maxWidth: .infinity)
                             }.padding(.top, 25)
                         }
@@ -61,16 +59,20 @@ struct LoginView: View {
                         
                         
                         Group {
-                            // Login Button
-                            Button {
-                                print("Login button Tapped")
-                            } label: {
-                                Text(Constants.login)
-                                    .foregroundColor(.white)
-                                    .font(.system(size: 20, weight: . semibold))
-                            }.frame(maxWidth: .infinity, minHeight: 40)
-                                .background(Color.theme)
-                                .cornerRadius(10)
+                            NavigationLink(destination: EmptyView(), isActive: $loginViewModel.isSuccess) {
+                                // Login Button
+                                Button {
+                                    loginAction()
+                                } label: {
+                                    Text(Constants.login)
+                                        .foregroundColor(.white)
+                                        .font(.system(size: 20, weight: . semibold))
+                                        .frame(maxWidth: .infinity)
+                                }.frame(maxWidth: .infinity, minHeight: 40)
+                                    .background(Color.theme)
+                                    .cornerRadius(10)
+                            }
+                            
                             
                             // View that has two horizontal lines and OR text between them
                             HStack {
@@ -112,9 +114,7 @@ struct LoginView: View {
                             // Register views
                             HStack {
                                 Text(Constants.newToFusemachines)
-                                Button {
-                                    shoudlNavigateToSignup = true
-                                }label: {
+                                NavigationLink(destination: SignupView()) {
                                     Text(Constants.register)
                                         .foregroundColor(.theme)
                                 }
@@ -128,6 +128,21 @@ struct LoginView: View {
                 .ignoresSafeArea()
             }
         }
+        .alert(isPresented: $showAlert) {
+            Alert(title: Text(alertMessage))
+        }
+    }
+    
+    private  func loginAction() {
+        
+        if let error = loginViewModel.error.first as? AppError {
+            showAlert = true
+            alertMessage = error.localizedDescription
+            return
+        }
+        showAlert = false
+        loginViewModel.isSuccess = loginViewModel.error.count == 0
+        
     }
 }
 

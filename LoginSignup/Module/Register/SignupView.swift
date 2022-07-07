@@ -8,8 +8,10 @@
 import SwiftUI
 
 struct SignupView: View {
+    @State var alertMessage = ""
+    @State var showAlert = false
     
-    @State var email: String = ""
+    @ObservedObject var signupViewModel = SignupViewModel()
     
     @Environment(\.presentationMode) var presentation
     
@@ -34,17 +36,17 @@ struct SignupView: View {
                         
                         VStack(spacing: 20) {
                             
-                            CustomTextField(title: Constants.name, image: "person.circle.fill", email: email, type: .email)
+                            CustomTextField(model: signupViewModel.nameTextModel, image: "person.circle.fill")
                                 .frame(maxWidth: .infinity)
                             
                             
-                            CustomTextField(title: Constants.email, image: "at.circle.fill", email: email, type: .email)
+                            CustomTextField(model: signupViewModel.emailTextModel, image: "at.circle.fill")
                                 .frame(maxWidth: .infinity)
                             
-                            CustomTextField(title: Constants.password, image: "lock.circle.fill", email: email, type: .password)
+                            CustomTextField(model: signupViewModel.passwordTextModel, image: "lock.circle.fill")
                                 .frame(maxWidth: .infinity)
                             
-                            CustomTextField(title: Constants.confirmPassword, image: "lock.circle.fill", email: email, type: .password)
+                            CustomTextField(model: signupViewModel.confirmPasswordTextModel, image: "lock.circle.fill")
                                 .frame(maxWidth: .infinity)
                         }.padding(.top, 10)
                     }
@@ -55,7 +57,7 @@ struct SignupView: View {
                     Group {
                         // Register Button
                         Button {
-                            print("Register button Tapped")
+                            signupAction()
                         } label: {
                             Text(Constants.register)
                                 .foregroundColor(.white)
@@ -119,6 +121,21 @@ struct SignupView: View {
             .padding(.horizontal)
             .ignoresSafeArea()
         }.navigationBarHidden(true)
+            .alert(isPresented: $showAlert) {
+                Alert(title: Text(alertMessage))
+            }
+    }
+    
+    private  func signupAction() {
+        
+        if let error = signupViewModel.error.first as? AppError {
+            showAlert = true
+            alertMessage = error.localizedDescription
+            return
+        }
+        showAlert = false
+        signupViewModel.isSuccess = signupViewModel.error.count == 0
+        
     }
 }
 

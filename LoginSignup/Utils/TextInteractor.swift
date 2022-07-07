@@ -59,9 +59,9 @@ class TextInteractor: TextFieldInteractable {
             }
             return true
             
-        case .password(_):
+        case .password(let field):
             if !optional && emptyValue(value: value) {
-                error = AppError.requiredField(LocalValue.required(PlainFieldType.password.name))
+                error = AppError.requiredField(LocalValue.required(field.name))
                 return false
             } else if (value?.count ?? 0) < 6 {
                 error = AppError.custom("Password should be atleast 6 character")
