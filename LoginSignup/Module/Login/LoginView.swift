@@ -6,11 +6,14 @@
 //
 
 import SwiftUI
+import Firebase
+
+
 
 struct LoginView: View {
-        
-    @State var alertMessage = ""
-    @State var showAlert = false
+    
+    @EnvironmentObject var sessionManager: SessionManager
+    
     @ObservedObject var loginViewModel = LoginViewModel()
     
     
@@ -20,49 +23,49 @@ struct LoginView: View {
     
     var body: some View {
         NavigationView {
-            GeometryReader { proxy in
-                ScrollView(showsIndicators: false) {
-                    VStack {
-                        
-                        Image.login
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 300, height: 300, alignment: .center)
-                        Group {
-                            /// For login title
-                            Text(Constants.login)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .font(.system(size: 30, weight: .bold))
+            ZStack {
+                GeometryReader { proxy in
+                    ScrollView(showsIndicators: false) {
+                        VStack {
                             
-                            VStack(spacing: 20) {
-                                CustomTextField(model: loginViewModel.emailTextModel, image: "at.circle.fill")
-                                    .frame(maxWidth: .infinity)
+                            Image.login
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 300, height: 300, alignment: .center)
+                            Group {
+                                /// For login title
+                                Text(Constants.login)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .font(.system(size: 30, weight: .bold))
                                 
-                                CustomTextField(model: loginViewModel.passwordTextModel, image: "lock.circle.fill")
-                                    .frame(maxWidth: .infinity)
-                            }.padding(.top, 25)
-                        }
-                        
-                        // Forgot Password Views
-                        HStack {
-                            Spacer()
-                            Button {
-                                print("Forgot Password Tapped")
-                            } label: {
-                                Text(Constants.forgotPassword)
-                                    .foregroundColor(.theme)
-                                    .font(.system(size: 16, weight: .medium))
+                                VStack(spacing: 20) {
+                                    CustomTextField(model: loginViewModel.emailTextModel, image: "at.circle.fill")
+                                        .frame(maxWidth: .infinity)
+                                    
+                                    CustomTextField(model: loginViewModel.passwordTextModel, image: "lock.circle.fill")
+                                        .frame(maxWidth: .infinity)
+                                }.padding(.top, 15)
                             }
-                        }
-                        
-                        Spacer().frame(height: 20)
-                        
-                        
-                        Group {
-                            NavigationLink(destination: EmptyView(), isActive: $loginViewModel.isSuccess) {
-                                // Login Button
+                            
+                            // Forgot Password Views
+                            HStack {
+                                Spacer()
                                 Button {
-                                    loginAction()
+                                    print("Forgot Password Tapped")
+                                } label: {
+                                    Text(Constants.forgotPassword)
+                                        .foregroundColor(.theme)
+                                        .font(.system(size: 16, weight: .medium))
+                                }
+                            }
+                            
+                            Spacer().frame(height: 20)
+                            
+                            
+                            Group {
+                                Button {
+                                    loginViewModel.login(sessionManager: sessionManager)
+//                                    loginAction()
                                 } label: {
                                     Text(Constants.login)
                                         .foregroundColor(.white)
@@ -71,78 +74,78 @@ struct LoginView: View {
                                 }.frame(maxWidth: .infinity, minHeight: 40)
                                     .background(Color.theme)
                                     .cornerRadius(10)
-                            }
-                            
-                            
-                            // View that has two horizontal lines and OR text between them
-                            HStack {
-                                VStack {
-                                    Divider()
-                                }
                                 
-                                Text(Constants.or)
-                                    .padding(.horizontal, 4)
-                                    .font(.system(size: 16, weight: .semibold))
-                                    .foregroundColor(.secondary)
-                                VStack {
-                                    Divider()
-                                }
-                            }.padding(.top, 20)
-                            
-                            // Login With Apple Button
-                            Button {
-                                print("Login with apple tapped")
-                            } label: {
+                                
+                                
+                                // View that has two horizontal lines and OR text between them
                                 HStack {
-                                    Image.appleImage
-                                        .resizable()
-                                        .frame(width: 20, height: 20)
-                                        .foregroundColor(.black)
-                                        .scaledToFit()
-                                    Text(Constants.loginWithApple)
-                                        .foregroundColor(.black)
-                                        .font(.system(size: 20, weight: . semibold))
-                                }
+                                    VStack {
+                                        Divider()
+                                    }
+                                    
+                                    Text(Constants.or)
+                                        .padding(.horizontal, 4)
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .foregroundColor(.secondary)
+                                    VStack {
+                                        Divider()
+                                    }
+                                }.padding(.top, 20)
                                 
-                            }.frame(maxWidth: .infinity, minHeight: 40)
-                                .background(Color.light)
-                                .cornerRadius(10)
-                                .padding(.top, 20)
-                            
-                            Spacer().frame(minHeight: 40)
-                            
-                            // Register views
-                            HStack {
-                                Text(Constants.newToFusemachines)
-                                NavigationLink(destination: SignupView()) {
-                                    Text(Constants.register)
-                                        .foregroundColor(.theme)
+                                // Login With Apple Button
+                                Button {
+                                    print("Login with apple tapped")
+                                } label: {
+                                    HStack {
+                                        Image.appleImage
+                                            .resizable()
+                                            .frame(width: 20, height: 20)
+                                            .foregroundColor(.black)
+                                            .scaledToFit()
+                                        Text(Constants.loginWithApple)
+                                            .foregroundColor(.black)
+                                            .font(.system(size: 20, weight: . semibold))
+                                    }
+                                    
+                                }.frame(maxWidth: .infinity, minHeight: 40)
+                                    .background(Color.light)
+                                    .cornerRadius(10)
+                                    .padding(.top, 20)
+                                
+                                Spacer().frame(minHeight: 40)
+                                
+                                // Register views
+                                HStack {
+                                    Text(Constants.newToFusemachines)
+                                    
+                                    Button {
+                                        sessionManager.showSignUp()
+                                    } label: {
+                                        Text(Constants.register)
+                                            .foregroundColor(.theme)
+                                    }
+                                    
+                                    
                                 }
                             }
-                        }
-                        
-                    }.frame(minHeight: proxy.size.height)
+                            
+                        }.frame(minHeight: proxy.size.height)
+                    }
+                    .frame(minHeight: proxy.size.height)
+                    .padding()
+                    .ignoresSafeArea()
+                    .navigationBarHidden(true)
                 }
-                .frame(minHeight: proxy.size.height)
-                .padding()
-                .ignoresSafeArea()
+                if loginViewModel.isAPICall {
+                    ProgressView()
+                        .scaleEffect(1.7)
+                }
+                
             }
         }
-        .alert(isPresented: $showAlert) {
-            Alert(title: Text(alertMessage))
-        }
-    }
-    
-    private  func loginAction() {
-        
-        if let error = loginViewModel.error.first as? AppError {
-            showAlert = true
-            alertMessage = error.localizedDescription
-            return
-        }
-        showAlert = false
-        loginViewModel.isSuccess = loginViewModel.error.count == 0
-        
+        .alert(isPresented: $loginViewModel.showAlert) {
+            Alert(title: Text(loginViewModel.alertMessage))
+        }.disabled(loginViewModel.isAPICall)
     }
 }
 
@@ -151,4 +154,3 @@ struct ContentView_Previews: PreviewProvider {
         LoginView()
     }
 }
-

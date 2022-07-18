@@ -6,17 +6,33 @@
 //
 
 import Combine
+import Firebase
 
-class LoginViewModel: ObservableObject {
-
+class BaseViewModel: ObservableObject {
+    
+    @Published var isAPICall = false
+    @Published var alertMessage = ""
+    @Published var showAlert = false
+    
     var bag = Set<AnyCancellable>()
+    
+    func showAlert(message: String) {
+        showAlert = true
+        alertMessage = message
+    }
+}
 
-    let emailTextModel = TextModel(name: "email", dataType: .email, interactor: TextInteractor(type: .email))
-    let passwordTextModel = TextModel(name: "password", isSecure: true, dataType: .password, interactor: TextInteractor(type: .password(.password)))
-    @Published var isSuccess = false
+class LoginViewModel: BaseViewModel {
+    
+    
+    var emailTextModel = TextModel(name: "email", dataType: .email, interactor: TextInteractor(type: .email))
+    var passwordTextModel = TextModel(name: "password", isSecure: true, dataType: .password, interactor: TextInteractor(type: .password(.password)))
+    
+    
     var  error = [Error]()
     
-    init() {
+    override init() {
+        super.init()
         observeValidation()
     }
     
@@ -28,5 +44,27 @@ class LoginViewModel: ObservableObject {
         }.eraseToAnyPublisher().sink { [weak self] result in
             self?.error = result
         }.store(in: &bag)
+    }
+    
+    func login(sessionManager: SessionManager) {
+        
+        if let error = error.first as? AppError {
+            showAlert(message: error.localizedDescription)
+            return
+        }
+        
+        isAPICall = true
+        
+        Auth.auth().signIn(withEmail: emailTextModel.value, password: passwordTextModel.value) { [weak self] result, error in
+            guard let self = self else { return }
+            self.isAPICall = false
+            if let error = error {
+                self.showAlert(message: error.localizedDescription)
+            } else {
+                if let user = Auth.auth().currentUser {
+                    sessionManager.authState = .session(user: user)
+                }
+            }
+        }
     }
 }
